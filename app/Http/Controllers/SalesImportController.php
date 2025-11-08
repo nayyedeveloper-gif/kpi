@@ -32,7 +32,6 @@ class SalesImportController extends Controller
         
         try {
             // Read the entire file to handle line breaks in headers
-            'total_discount' => SalesData::sum('dis') + SalesData::sum('promotion_dis') + SalesData::sum('special_dis'),
             
             // Remove BOM if it exists
             $bom = pack('H*','EFBBBF');
