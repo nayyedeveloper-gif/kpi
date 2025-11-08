@@ -1,0 +1,1179 @@
+@extends('layouts.app')
+
+@push('styles')
+@vite(['resources/css/app.css', 'resources/js/app.js'])
+<style>
+    :root {
+        /* Color System */
+        --primary: #4e73df;
+        --primary-light: rgba(78, 115, 223, 0.1);
+        --secondary: #6c757d;
+        --success: #1cc88a;
+        --success-light: rgba(28, 200, 138, 0.1);
+        --info: #36b9cc;
+        --info-light: rgba(54, 185, 204, 0.1);
+        --warning: #f6c23e;
+        --warning-light: rgba(246, 194, 62, 0.1);
+        --danger: #e74a3b;
+        --danger-light: rgba(231, 74, 59, 0.1);
+        --light: #f8f9fc;
+        --lighter: #fcfdfe;
+        --dark: #5a5c69;
+        --darker: #2c2f33;
+        --border: #e3e6f0;
+        --border-radius: 0.5rem;
+        --box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        --box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        --transition: all 0.2s ease-in-out;
+        --text-muted: #6c757d;
+        --text-light: #b7b9cc;
+        --card-bg: #fff;
+        --card-border: #e3e6f0;
+    }
+    
+    /* Base Styles */
+    body {
+        background-color: var(--light);
+        color: var(--dark);
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Card Styling */
+    .card {
+        border: 1px solid var(--border);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow-sm);
+        transition: var(--transition);
+        background-color: var(--card-bg);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card:hover {
+        box-shadow: var(--box-shadow);
+    }
+    
+    .card-header {
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 1.25rem;
+        border-top-left-radius: var(--border-radius) !important;
+        border-top-right-radius: var(--border-radius) !important;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    /* Table Styling */
+    .table {
+        --table-cell-padding: 0.75rem 1rem;
+        --table-header-padding: 0.75rem 1rem;
+        --table-row-hover: rgba(78, 115, 223, 0.02);
+        --table-striped-bg: rgba(0, 0, 0, 0.01);
+        --table-border: rgba(0, 0, 0, 0.05);
+        
+        width: 100%;
+        color: var(--dark);
+        font-size: 0.85rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: #fff;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--table-border);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        padding: var(--table-header-padding);
+        white-space: nowrap;
+        transition: var(--transition);
+        vertical-align: middle;
+    }
+    
+    .table tbody td {
+        padding: var(--table-cell-padding);
+        vertical-align: middle;
+        border-color: var(--table-border);
+        transition: background-color 0.2s ease;
+    }
+    
+    .table tbody tr:not(:last-child) {
+        border-bottom: 1px solid var(--table-border);
+    }
+    
+    .table tbody tr:hover {
+        background-color: var(--table-row-hover);
+    }
+    
+    /* Responsive Table Container */
+    .table-responsive {
+        position: relative;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+    
+    /* Badge Styling */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 600;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+        transition: var(--transition);
+    }
+    
+    .badge-success {
+        background-color: var(--success-light);
+        color: var(--success);
+    }
+    
+    .badge-warning {
+        background-color: var(--warning-light);
+        color: var(--warning);
+    }
+    
+    .badge-danger {
+        background-color: var(--danger-light);
+        color: var(--danger);
+    }
+    
+    /* Button Styling */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        line-height: 1.5;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        border: 1px solid transparent;
+        border-radius: 0.35rem;
+        transition: var(--transition);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2e59d9;
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+        background-color: transparent;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    /* Form Controls */
+    .form-control, .form-select {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--dark);
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid var(--border);
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: 0.35rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        color: var(--dark);
+        background-color: #fff;
+        border-color: var(--primary);
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    /* Responsive Utilities */
+    @media (max-width: 767.98px) {
+        .table-responsive {
+            border: 0;
+        }
+        
+        .table thead {
+            display: none;
+        }
+        
+        .table, .table tbody, .table tr, .table td {
+            display: block;
+            width: 100%;
+        }
+        
+        .table tr {
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table td {
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .table td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 1rem;
+            width: 45%;
+            padding-right: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+    }
+    
+    body {
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Table Styling */
+    .table {
+        --table-cell-padding: 0.75rem 1rem;
+        --table-header-padding: 0.75rem 1rem;
+        --table-border-radius: 0.5rem;
+        --table-row-hover: rgba(78, 115, 223, 0.02);
+        --table-striped-bg: rgba(0, 0, 0, 0.01);
+        --table-border-color: rgba(0, 0, 0, 0.05);
+        
+        margin: 0;
+        width: 100%;
+        color: var(--dark-color);
+        font-size: 0.85rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: #fff;
+        border-radius: var(--table-border-radius);
+        overflow: hidden;
+    }
+    
+    .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #fff;
+        background-clip: padding-box;
+        border-bottom: 1px solid var(--table-border-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        padding: var(--table-header-padding);
+        white-space: nowrap;
+        transition: var(--transition);
+        vertical-align: middle;
+    }
+    
+    .table thead th:first-child {
+        border-top-left-radius: var(--table-border-radius);
+    }
+    
+    .table thead th:last-child {
+        border-top-right-radius: var(--table-border-radius);
+    }
+    
+    .table tbody td {
+        padding: var(--table-cell-padding);
+        vertical-align: middle;
+        border-color: var(--table-border-color);
+        transition: background-color 0.2s ease;
+    }
+    
+    /* Sticky Columns */
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        z-index: 5;
+        background-color: #fff;
+        background-clip: padding-box;
+        box-shadow: 2px 0 8px -2px rgba(0, 0, 0, 0.03);
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .sticky-col-actions {
+        position: sticky;
+        right: 0;
+        z-index: 5;
+        background-color: #fff;
+        background-clip: padding-box;
+        box-shadow: -2px 0 8px -2px rgba(0, 0, 0, 0.03);
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    /* Ensure sticky columns maintain background on hover */
+    tr:hover .sticky-col,
+    tr:hover .sticky-col-actions {
+        background-color: var(--table-row-hover);
+    }
+    
+    /* Add subtle border to separate sticky columns */
+    .sticky-col:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, 
+            rgba(0,0,0,0.05) 0%, 
+            rgba(0,0,0,0.1) 50%, 
+            rgba(0,0,0,0.05) 100%);
+    }
+    
+    .sticky-col-actions:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, 
+            rgba(0,0,0,0.05) 0%, 
+            rgba(0,0,0,0.1) 50%, 
+            rgba(0,0,0,0.05) 100%);
+    }
+    
+    /* Hover Effects */
+    .table-hover tbody tr:hover {
+        background-color: rgba(79, 70, 229, 0.03);
+    }
+    
+    /* Text Utilities */
+    .text-nowrap {
+        white-space: nowrap;
+    }
+    
+    .text-ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+    
+    /* Badge Styles */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 600;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .badge-pill {
+        border-radius: 50rem;
+    }
+    
+    .badge-success {
+        background-color: #ecfdf5;
+        color: #047857;
+    }
+    
+    .badge-warning {
+        background-color: #fffbeb;
+        color: #b45309;
+    }
+    
+    .badge-danger {
+        background-color: #fef2f2;
+        color: #b91c1c;
+    }
+    
+    .badge-info {
+        background-color: #eff6ff;
+        color: #1e40af;
+    }
+    
+    .badge-light {
+        background-color: #f9fafb;
+        color: #4b5563;
+    }
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    .badge-success {
+        @apply bg-green-100 text-green-800;
+    }
+    .badge-warning {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+    .badge-danger {
+        @apply bg-red-100 text-red-800;
+    }
+    .badge-info {
+        @apply bg-blue-100 text-blue-800;
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="container-fluid px-3 px-md-4 py-4">
+    <!-- Page Loading Indicator -->
+    <div id="loadingIndicator" class="position-fixed top-50 start-50 translate-middle d-none">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <!-- Page Header with Gradient Background -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-4 rounded-3" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+        <div class="mb-3 mb-md-0">
+            <h1 class="h3 mb-1 text-white">
+                <i class="fas fa-shopping-cart me-2"></i>Sales Transactions
+            </h1>
+            <p class="text-muted mb-0">Manage and track all sales records</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sales Data</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="newTransactionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                            <span class="me-2 text-primary">{!! $svgIcons['printer'] !!}</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-muted">Total Sales</h6>
+                            <h4 class="mb-0">{{ number_format($summary['total_sales']) }} <small class="text-muted">Ks</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                            <span class="me-2 text-success">{!! $svgIcons['file-excel'] !!}</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-muted">Total Quantity</h6>
+                            <h4 class="mb-0">{{ number_format($summary['total_quantity']) }} <small class="text-muted">items</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                            <span class="me-2 text-danger">{!! $svgIcons['file-pdf'] !!}</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-muted">Total Tax</h6>
+                            <h4 class="mb-0">{{ number_format($summary['total_tax']) }} <small class="text-muted">Ks</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                            <span class="me-2 text-info">{!! $svgIcons['file-csv'] !!}</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-muted">Total Discount</h6>
+                            <h4 class="mb-0">{{ number_format($summary['total_discount']) }} <small class="text-muted">Ks</small></h4>
+                        </div>
+                    </div>
+
+        <!-- Alerts -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+                        <select name="sale_person" id="sale_person" class="form-select form-select-sm">
+                            <option value="">All Sales Persons</option>
+                            @foreach($salePersons as $person)
+                                <option value="{{ $person }}" {{ request('sale_person') == $person ? 'selected' : '' }}>{{ $person }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="from_date" class="form-label small fw-bold text-muted">From Date</label>
+                        <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="to_date" class="form-label small fw-bold text-muted">To Date</label>
+                        <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3 d-flex align-items-end">
+                        <div class="btn-group w-100" role="group">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-filter me-1"></i> Apply
+                            </button>
+                            <a href="{{ route('sales.data.index') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-undo me-1"></i> Reset
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Table -->
+    <!-- Enhanced Card with Shadow and Border -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center py-3 border-bottom">
+            <div class="d-flex align-items-center mb-2 mb-md-0">
+                <h5 class="mb-0 fw-semibold">
+                    <i class="fas fa-table text-primary me-2"></i>
+                    Sales Records
+                    @if(isset($salesData) && method_exists($salesData, 'total') && $salesData->total() > 0)
+                        <span class="badge bg-primary-soft text-primary ms-2">{{ $salesData->total() }} records</span>
+                    @endif
+                </h5>
+            </div>
+            
+            <!-- Table Actions -->
+            <div class="d-flex flex-column flex-md-row gap-2">
+                <!-- Search Box -->
+                <div class="input-group input-group-sm" style="min-width: 200px;">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control form-control-sm border-start-0" 
+                           id="searchInput" 
+                           placeholder="Search..."
+                           aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" title="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="btn-group" role="group">
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-secondary" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false"
+                            title="More options">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="#" id="exportCsv">
+                                <i class="fas fa-file-export me-2 text-primary"></i> Export as CSV
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" id="printTable">
+                                <i class="fas fa-print me-2 text-info"></i> Print
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="#" id="refreshTable">
+                                <i class="fas fa-sync-alt me-2 text-secondary"></i> Refresh
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="loadingIndicator" class="d-none position-absolute w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center" style="z-index: 1050; top: 0; left: 0;">
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mb-0 text-muted">Loading data...</p>
+            </div>
+        </div>
+        
+        <!-- No Records Message -->
+        @if(isset($salesData) && $salesData->isEmpty())
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-inbox fa-3x text-muted opacity-25"></i>
+                </div>
+                <h5 class="text-muted">No sales records found</h5>
+                <p class="text-muted">Try adjusting your search or filter to find what you're looking for.</p>
+                <a href="{{ route('sales.data.index') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                </a>
+            </div>
+        @else
+        <!-- Table -->
+        <!-- Enhanced Table Container with Loading State -->
+        <div class="table-responsive position-relative" id="salesTableContainer">
+            <div class="position-absolute top-50 start-50 translate-middle d-none" id="tableLoading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <table class="table table-hover align-middle mb-0" id="salesTable">
+                <colgroup>
+                    <col style="width: 60px;">
+                    <col style="width: 120px;">
+                    <col style="min-width: 140px;">
+                    <col style="min-width: 160px;">
+                    <col style="min-width: 150px;">
+                    <col style="width: 100px;">
+                    <col style="width: 120px;">
+                    <col style="width: 140px;">
+                    <col style="width: 100px;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        @php
+                            $columns = [
+                                'no' => [
+                                    'label' => '#', 
+                                    'width' => '60px', 
+                                    'class' => 'text-center sticky-col',
+                                    'icon' => 'hashtag',
+                                    'sortable' => false
+                                ],
+                                'invoiced_date' => [
+                                    'label' => 'Date', 
+                                    'width' => '120px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'calendar-day',
+                                    'sortable' => true
+                                ],
+                                'voucher_number' => [
+                                    'label' => 'Voucher #', 
+                                    'width' => '140px', 
+                                    'class' => 'text-start sticky-col',
+                                    'icon' => 'receipt',
+                                    'sortable' => true
+                                ],
+                                'customer_name' => [
+                                    'label' => 'Customer', 
+                                    'width' => '180px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'user-tie',
+                                    'sortable' => true
+                                ],
+                                'item_name' => [
+                                    'label' => 'Item', 
+                                    'width' => '200px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'box',
+                                    'sortable' => true
+                                ],
+                                'item_categories' => [
+                                    'label' => 'Category', 
+                                    'width' => '140px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'tag',
+                                    'sortable' => true
+                                ],
+                                'item_group' => [
+                                    'label' => 'Group', 
+                                    'width' => '140px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'layer-group',
+                                    'sortable' => true
+                                ],
+                                'quantity' => [
+                                    'label' => 'Quantity', 
+                                    'width' => '100px', 
+                                    'class' => 'text-end',
+                                    'icon' => 'hashtag',
+                                    'sortable' => true
+                                ],
+                                'm_price' => [
+                                    'label' => 'Unit Price', 
+                                    'width' => '120px', 
+                                    'class' => 'text-end',
+                                    'icon' => 'tag',
+                                    'sortable' => true
+                                ],
+                                'total_net_amount' => [
+                                    'label' => 'Amount', 
+                                    'width' => '140px', 
+                                    'class' => 'text-end fw-bold',
+                                    'icon' => 'money-bill-wave',
+                                    'sortable' => true
+                                ],
+                                'sale_person' => [
+                                    'label' => 'Sales Person', 
+                                    'width' => '160px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'user-tag',
+                                    'sortable' => true
+                                ],
+                                'branch' => [
+                                    'label' => 'Branch', 
+                                    'width' => '140px', 
+                                    'class' => 'text-start',
+                                    'icon' => 'store',
+                                    'sortable' => true
+                                ],
+                                'status' => [
+                                    'label' => 'Status', 
+                                    'width' => '120px', 
+                                    'class' => 'text-center',
+                                    'icon' => 'info-circle',
+                                    'sortable' => true
+                                ],
+                                'actions' => [
+                                    'label' => '', 
+                                    'width' => '80px', 
+                                    'class' => 'text-center sticky-col-actions',
+                                    'icon' => 'ellipsis-v',
+                                    'sortable' => false
+                                ]
+                            ];
+                        @endphp
+                        
+                        @foreach($columns as $field => $config)
+                            @php
+                                $isSortable = $config['sortable'] ?? true;
+                                $sortIcon = '';
+                                
+                                if ($isSortable) {
+                                    $sortIcon = $sortField == $field 
+                                        ? '<span class="ms-1 text-primary">' . ($sortDirection == 'asc' ? $svgIcons['sort-up'] : $svgIcons['sort-down']) . '</span>'
+                                        : '<span class="ms-1 opacity-50">' . $svgIcons['sort'] . '</span>';
+                                }
+                                
+                                $icon = $config['icon'] ? '<i class="fas fa-' . $config['icon'] . ' me-1 opacity-75" style="font-size: 0.8em;"></i>' : '';
+                                $columns = [
+                                    'no' => [
+                                        'label' => '#', 
+                                        'width' => '60px', 
+                                        'class' => 'text-center sticky-col',
+                                        'icon' => 'hashtag',
+                                        'sortable' => false
+                                    ],
+                                    'invoiced_date' => [
+                                        'label' => 'Date', 
+                                        'width' => '120px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'calendar-day',
+                                        'sortable' => true
+                                    ],
+                                    'voucher_number' => [
+                                        'label' => 'Voucher #', 
+                                        'width' => '140px', 
+                                        'class' => 'text-start sticky-col',
+                                        'icon' => 'receipt',
+                                        'sortable' => true
+                                    ],
+                                    'customer_name' => [
+                                        'label' => 'Customer', 
+                                        'width' => '180px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'user-tie',
+                                        'sortable' => true
+                                    ],
+                                    'item_name' => [
+                                        'label' => 'Item', 
+                                        'width' => '200px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'box',
+                                        'sortable' => true
+                                    ],
+                                    'item_categories' => [
+                                        'label' => 'Category', 
+                                        'width' => '140px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'tag',
+                                        'sortable' => true
+                                    ],
+                                    'item_group' => [
+                                        'label' => 'Group', 
+                                        'width' => '140px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'layer-group',
+                                        'sortable' => true
+                                    ],
+                                    'quantity' => [
+                                        'label' => 'Quantity', 
+                                        'width' => '100px', 
+                                        'class' => 'text-end',
+                                        'icon' => 'hashtag',
+                                        'sortable' => true
+                                    ],
+                                    'm_price' => [
+                                        'label' => 'Unit Price', 
+                                        'width' => '120px', 
+                                        'class' => 'text-end',
+                                        'icon' => 'tag',
+                                        'sortable' => true
+                                    ],
+                                    'total_net_amount' => [
+                                        'label' => 'Amount', 
+                                        'width' => '140px', 
+                                        'class' => 'text-end fw-bold',
+                                        'icon' => 'money-bill-wave',
+                                        'sortable' => true
+                                    ],
+                                    'sale_person' => [
+                                        'label' => 'Sales Person', 
+                                        'width' => '160px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'user-tag',
+                                        'sortable' => true
+                                    ],
+                                    'branch' => [
+                                        'label' => 'Branch', 
+                                        'width' => '140px', 
+                                        'class' => 'text-start',
+                                        'icon' => 'store',
+                                        'sortable' => true
+                                    ],
+                                    'status' => [
+                                        'label' => 'Status', 
+                                        'width' => '120px', 
+                                        'class' => 'text-center',
+                                        'icon' => 'info-circle',
+                                        'sortable' => true
+                                    ],
+                                    'actions' => [
+                                        'label' => '', 
+                                        'width' => '80px', 
+                                        'class' => 'text-center sticky-col-actions',
+                                        'icon' => 'ellipsis-v',
+                                        'sortable' => false
+                                    ]
+                                ];
+                            @endphp
+                            
+                            @foreach($columns as $field => $config)
+                                @php
+                                    $isSortable = $config['sortable'] ?? true;
+                                    $sortIcon = '';
+                                    
+                                    if ($isSortable) {
+                                        $sortIcon = $sortField == $field 
+                                            ? '<span class="ms-1 text-primary">' . ($sortDirection == 'asc' ? $svgIcons['sort-up'] : $svgIcons['sort-down']) . '</span>'
+                                            : '<span class="ms-1 opacity-50">' . $svgIcons['sort'] . '</span>';
+                                    }
+                                    
+                                    $icon = $config['icon'] ? '<i class="fas fa-' . $config['icon'] . ' me-1 opacity-75" style="font-size: 0.8em;"></i>' : '';
+                                @endphp
+                                
+                                <th class="px-3 py-3 text-uppercase text-muted small fw-semibold {{ $config['class'] }}" 
+                                    style="width: {{ $config['width'] }};" 
+                                    data-field="{{ $field }}"
+                                    data-sortable="{{ $isSortable ? 'true' : 'false' }}">
+                                    
+                                    @if($isSortable)
+                                        <a href="{{ request()->fullUrlWithQuery([
+                                            'sort' => $field, 
+                                            'direction' => $sortField == $field && $sortDirection == 'asc' ? 'desc' : 'asc'
+                                        ]) }}" class="text-decoration-none text-muted d-flex align-items-center">
+                                            {!! $icon !!}
+                                            <span>{{ $config['label'] }}</span>
+                                            {!! $sortIcon !!}
+                                        </a>
+                                    @else
+                                        <div class="d-flex align-items-center">
+                                            {!! $icon !!}
+                                            <span>{{ $config['label'] }}</span>
+                                        </div>
+                                    @endif
+                                </th>
+                            @endforeach
+                </thead>
+                <tbody class="bg-white">
+                    @forelse($salesData as $index => $sale)
+                        @php
+                            $statusClass = [
+                                'paid' => 'success',
+                                'pending' => 'warning',
+                                'cancelled' => 'danger',
+                                'refunded' => 'info'
+                            ][$sale->status ?? 'paid'] ?? 'secondary';
+                            
+                            $formattedDate = $sale->invoiced_date 
+                                ? \Carbon\Carbon::parse($sale->invoiced_date)->format('d M Y')
+                                : 'N/A';
+                        @endphp
+                        <tr class="border-bottom">
+                            </td>
+                            
+                            <!-- Voucher -->
+                            <td class="font-monospace">
+                                <a href="{{ route('sales.data.show', $sale->id) }}" class="text-primary text-decoration-none fw-medium">
+                                    {{ $sale->voucher_number }}
+                                </a>
+                            </td>
+                            
+                            <!-- Customer -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-2">
+                                        <div class="avatar-sm">
+                                            <div class="avatar-title bg-light text-primary rounded-circle fw-semibold">
+                                                {{ substr($sale->customer_name, 0, 1) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">{{ $sale->customer_name ?? 'Walk-in Customer' }}</h6>
+                                        @if($sale->customer_phone)
+                                            <small class="text-muted">
+                                                <i class="fas fa-phone-alt me-1"></i> {{ $sale->customer_phone }}
+                                            </small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Item -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-2">
+                                        <div class="avatar-xs">
+                                            <div class="avatar-title bg-light text-primary rounded">
+                                                <i class="fas fa-box"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">{{ $sale->item_name }}</h6>
+                                        @if($sale->item_code)
+                                            <small class="text-muted">SKU: {{ $sale->item_code }}</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Quantity -->
+                            <td class="text-end">
+                                <span class="badge bg-light text-dark border">
+                                    {{ number_format($sale->quantity) }} {{ $sale->uom ? strtolower($sale->uom) : 'pcs' }}
+                                </span>
+                            </td>
+                            
+                            <!-- Unit Price -->
+                            <td class="text-end fw-medium">
+                                {{ number_format($sale->m_price) }} Ks
+                            </td>
+                            
+                            <!-- Amount -->
+                            <td class="text-end fw-bold">
+                                {{ number_format($sale->total_net_amount) }} Ks
+                            </td>
+                            
+                            <!-- Status -->
+                            <td class="text-center">
+                                @php
+                                    $statusConfig = [
+                                        'completed' => ['class' => 'success', 'icon' => 'check-circle'],
+                                        'pending' => ['class' => 'warning', 'icon' => 'clock'],
+                                        'cancelled' => ['class' => 'danger', 'icon' => 'times-circle'],
+                                        'refunded' => ['class' => 'info', 'icon' => 'exchange-alt'],
+                                        'on_hold' => ['class' => 'secondary', 'icon' => 'pause-circle'],
+                                        'processing' => ['class' => 'primary', 'icon' => 'cog fa-spin'],
+                                    ][strtolower($sale->status)] ?? ['class' => 'secondary', 'icon' => 'question-circle'];
+                                @endphp
+                                <span class="badge bg-{{ $statusConfig['class'] }}-soft text-{{ $statusConfig['class'] }} d-inline-flex align-items-center">
+                                    <i class="fas fa-{{ $statusConfig['icon'] }} me-1"></i>
+                                    {{ ucfirst($sale->status) }}
+                                </span>
+                            </td>
+                            
+                            <!-- Actions -->
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link text-muted p-0" type="button" 
+                                            id="actionDropdown{{ $sale->id }}" 
+                                            data-bs-toggle="dropdown" 
+                                            aria-expanded="false"
+                                            title="Actions">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border shadow-sm" aria-labelledby="actionDropdown{{ $sale->id }}">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{{ route('sales.data.show', $sale->id) }}">
+                                                <i class="fas fa-eye me-2 text-primary"></i> View Details
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{{ route('sales.data.edit', $sale->id) }}">
+                                                <i class="fas fa-edit me-2 text-info"></i> Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#printReceiptModal" data-id="{{ $sale->id }}">
+                                                <i class="fas fa-print me-2 text-secondary"></i> Print Receipt
+                                            </a>
+                                        </li>
+                                        @if($sale->status != 'cancelled')
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('sales.data.cancel', $sale->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="dropdown-item py-2 text-danger" 
+                                                            onclick="return confirm('Are you sure you want to cancel this sale?')">
+                                                        <i class="fas fa-times-circle me-2"></i> Cancel Sale
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endif
+                                        @if(auth()->user()->can('delete sales'))
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('sales.data.destroy', $sale->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item py-2 text-danger" 
+                                                            onclick="return confirm('This will permanently delete the record. Continue?')">
+                                                        <i class="fas fa-trash-alt me-2"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endif
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="12" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-inbox fa-3x text-muted opacity-25"></i>
+                                    </div>
+                                    <h5 class="text-muted mb-2">No sales records found</h5>
+                                    <p class="text-muted mb-3">Try adjusting your search or filter to find what you're looking for.</p>
+                                    <a href="{{ route('sales.data.create') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i> Create New Sale
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Table Footer with Pagination -->
+        @if(isset($salesData) && $salesData->hasPages())
+            <div class="card-footer bg-white border-top d-flex flex-column flex-md-row justify-content-between align-items-center py-3">
+                <!-- Results Count -->
+                <div class="text-muted small mb-2 mb-md-0">
+                    Showing <span class="fw-medium">{{ $salesData->firstItem() }}</span> to 
+                    <span class="fw-medium">{{ $salesData->lastItem() }}</span> of 
+                    <span class="fw-medium">{{ $salesData->total() }}</span> entries
+                    @if(request()->has('search') || request()->has('status') || request()->has('date_from'))
+                        <span class="ms-2">
+                            <a href="{{ route('sales.data.index') }}" class="text-primary">
+                                <i class="fas fa-sync-alt me-1"></i> Clear filters
+                            </a>
+                        </span>
+                    @endif
+                </div>
+                
+                <!-- Pagination -->
+                <div class="d-flex align-items-center">
+                    <!-- Rows per page selector -->
+                    <div class="me-3 d-none d-md-block">
+                        <div class="input-group input-group-sm" style="width: 120px;">
+                            <span class="input-group-text bg-light border-end-0">Rows:</span>
+                            <select class="form-select form-select-sm" id="perPage" name="per_page" onchange="this.form.submit()">
+                                @foreach([10, 25, 50, 100] as $perPage)
+                                    <option value="{{ $perPage }}" {{ request('per_page', 10) == $perPage ? 'selected' : '' }}>
+                                        {{ $perPage }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination Links -->
+                    <nav aria-label="Page navigation">
+                        {{ $salesData->withQueryString()->onEachSide(1)->links() }}
+                    </nav>
+                </div>
+            </div>
+        @endif
+
+@endsection
