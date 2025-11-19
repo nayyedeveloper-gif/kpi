@@ -377,10 +377,10 @@ class SalesEntry extends Component
                 'total_revenue' => SalesTransaction::sum('net_amount'),
                 'total_quantity' => SalesTransaction::sum('quantity'),
                 'total_transactions' => SalesTransaction::count(),
-                'total_commission' => SalesTransaction::sum('commission')
+                'total_commission' => SalesTransaction::sum('commission_amount')
             ],
             'branches' => SalesTransaction::select('branch')->distinct()->pluck('branch'),
-            'categories' => SalesTransaction::select('category')->distinct()->pluck('category'),
+            'categories' => SalesTransaction::select('item_category')->distinct()->pluck('item_category'),
             'salesPeople' => User::whereHas('role', function($query) {
                 $query->whereIn('name', ['admin', 'sales']);
             })->select('id', 'name')->get()
@@ -489,7 +489,7 @@ class SalesEntry extends Component
             
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('CSV Import Error: ' . $e->getMessage(), [
+            Log::error('CSV Import Error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString()
             ]);
@@ -603,11 +603,21 @@ class SalesEntry extends Component
         
         // Ensure we have the CSV data
         if (empty($this->csvData)) {
-            $path = $this->csvFile->getRealPath();
-            $csv = Reader::createFromPath($path, 'r');
-            $csv->setHeaderOffset(0);
-            $this->csvHeaders = $csv->getHeader();
-            $this->csvData = iterator_to_array($csv->getRecords());
+            try {
+                $path = $this->csvFile->getRealPath();
+                $csv = Reader::createFromPath($path, 'r');
+                $csv->setHeaderOffset(0);
+                $this->csvHeaders = $csv->getHeader();
+                $this->csvData = iterator_to_array($csv->getRecords());
+            } catch (\Exception $e) {
+                Log::error('CSV Import Error: ' . $e->getMessage(), [
+                    'exception' => $e,
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                $this->addError('csvFile', 'Error processing CSV file: ' . $e->getMessage());
+                return;
+            }
         }
 
         // Auto-detect mappings based on common column names

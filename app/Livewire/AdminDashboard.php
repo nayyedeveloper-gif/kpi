@@ -2,13 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Models\User;
 use App\Models\KpiMeasurement;
 use App\Models\KpiLog;
-use App\Models\Department;
-use App\Models\Position;
 use App\Models\SalesTransaction;
-use App\Models\BonusAward;
+use App\Models\RankingCode;
 use Livewire\Component;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -25,10 +22,10 @@ class AdminDashboard extends Component
     public function getOverviewStatsProperty()
     {
         return [
-            'total_users' => User::active()->count(),
-            'total_departments' => Department::where('is_active', true)->count(),
-            'total_positions' => Position::where('is_active', true)->count(),
-            'total_branches' => \App\Models\Branch::where('is_active', true)->count(),
+            'total_ranking_codes' => RankingCode::count(),
+            'total_kpi_measurements' => KpiMeasurement::count(),
+            'total_sales_transactions' => SalesTransaction::count(),
+            'active_today' => KpiMeasurement::whereDate('measurement_date', Carbon::today())->count(),
         ];
     }
 
@@ -60,20 +57,7 @@ class AdminDashboard extends Component
             'total_commission' => $transactions->sum('commission_amount'),
             'today_revenue' => SalesTransaction::whereDate('sale_date', Carbon::today())->sum('total_amount'),
             'today_transactions' => SalesTransaction::whereDate('sale_date', Carbon::today())->count(),
-        ];
-    }
-
-    public function getBonusStatsProperty()
-    {
-        $dateFrom = Carbon::now()->subDays($this->dateRange);
-        
-        return [
-            'pending_bonuses' => BonusAward::pending()->whereBetween('period_start', [$dateFrom, Carbon::now()])->count(),
-            'pending_amount' => BonusAward::pending()->whereBetween('period_start', [$dateFrom, Carbon::now()])->sum('bonus_amount'),
-            'approved_bonuses' => BonusAward::approved()->whereBetween('period_start', [$dateFrom, Carbon::now()])->count(),
-            'approved_amount' => BonusAward::approved()->whereBetween('period_start', [$dateFrom, Carbon::now()])->sum('bonus_amount'),
-            'paid_bonuses' => BonusAward::paid()->whereBetween('period_start', [$dateFrom, Carbon::now()])->count(),
-            'paid_amount' => BonusAward::paid()->whereBetween('period_start', [$dateFrom, Carbon::now()])->sum('bonus_amount'),
+            'avg_transaction' => $transactions->count() > 0 ? $transactions->avg('total_amount') : 0,
         ];
     }
 
@@ -81,39 +65,45 @@ class AdminDashboard extends Component
     {
         $dateFrom = Carbon::now()->subDays($this->dateRange);
         
-        return User::active()
-            ->withCount(['kpiMeasurements' => function ($query) use ($dateFrom) {
-                $query->whereBetween('measurement_date', [$dateFrom, Carbon::now()]);
-            }])
-            ->with(['department', 'position'])
-            ->having('kpi_measurements_count', '>', 0)
-            ->orderBy('kpi_measurements_count', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function ($user) use ($dateFrom) {
-                $measurements = $user->kpiMeasurements()
-                    ->whereBetween('measurement_date', [$dateFrom, Carbon::now()])
-                    ->get();
-                
-                $user->avg_score = $measurements->count() > 0 ? round($measurements->avg('total_score'), 2) : 0;
-                $user->avg_percentage = $measurements->count() > 0 ? round($measurements->avg('percentage'), 1) : 0;
-                
-                return $user;
-            });
+        return RankingCode::whereHas('kpiMeasurements', function ($query) use ($dateFrom) {
+            $query->whereBetween('measurement_date', [$dateFrom, Carbon::now()]);
+        })
+        ->with(['kpiMeasurements' => function ($query) use ($dateFrom) {
+            $query->whereBetween('measurement_date', [$dateFrom, Carbon::now()]);
+        }])
+        ->get()
+        ->map(function ($rankingCode) {
+            $measurements = $rankingCode->kpiMeasurements;
+            $rankingCode->avg_score = $measurements->count() > 0 ? round($measurements->avg('total_score'), 2) : 0;
+            $rankingCode->avg_percentage = $measurements->count() > 0 ? round($measurements->avg('percentage'), 1) : 0;
+            $rankingCode->measurement_count = $measurements->count();
+            $rankingCode->latest_score = $measurements->sortByDesc('measurement_date')->first()?->total_score ?? 0;
+            
+            return $rankingCode;
+        })
+        ->sortByDesc('avg_percentage')
+        ->take(5);
     }
 
     public function getTopSalesPersonsProperty()
     {
         $dateFrom = Carbon::now()->subDays($this->dateRange);
         
-        return User::active()
-            ->join('sales_transactions', 'users.id', '=', 'sales_transactions.sales_person_id')
-            ->whereBetween('sales_transactions.sale_date', [$dateFrom, Carbon::now()])
-            ->groupBy('users.id', 'users.name', 'users.email', 'users.profile_photo', 'users.department_id', 'users.position_id')
-            ->selectRaw('users.id, users.name, users.email, users.profile_photo, users.department_id, users.position_id, SUM(sales_transactions.total_amount) as total_revenue, COUNT(sales_transactions.id) as transaction_count')
+        return SalesTransaction::with('salesPerson')
+            ->whereBetween('sale_date', [$dateFrom, Carbon::now()])
+            ->selectRaw('sales_person_id, SUM(total_amount) as total_revenue, COUNT(*) as transaction_count, AVG(total_amount) as avg_transaction')
+            ->groupBy('sales_person_id')
             ->orderBy('total_revenue', 'desc')
-            ->limit(5)
-            ->get();
+            ->take(5)
+            ->get()
+            ->map(function ($transaction) {
+                return [
+                    'sales_person' => $transaction->salesPerson,
+                    'total_revenue' => $transaction->total_revenue,
+                    'transaction_count' => $transaction->transaction_count,
+                    'avg_transaction' => $transaction->avg_transaction,
+                ];
+            });
     }
 
     public function getRecentActivitiesProperty()
@@ -121,87 +111,72 @@ class AdminDashboard extends Component
         $activities = collect();
         
         // Recent KPI Measurements
-        $recentKpi = KpiMeasurement::with('user')
+        $recentKpi = KpiMeasurement::with('rankingCode')
             ->orderBy('created_at', 'desc')
-            ->limit(3)
+            ->limit(5)
             ->get()
             ->map(function ($kpi) {
+                $name = $kpi->rankingCode ? $kpi->rankingCode->name : 'Unknown User';
                 return [
                     'type' => 'kpi',
                     'icon' => '📊',
                     'color' => 'blue',
-                    'message' => "{$kpi->user->name} submitted KPI measurement",
+                    'message' => "{$name} submitted KPI measurement",
                     'time' => $kpi->created_at,
-                    'details' => "Score: {$kpi->total_score}/6",
+                    'details' => "Score: {$kpi->total_score}/6 ({$kpi->percentage}%)",
                 ];
             });
         
         // Recent Sales
         $recentSales = SalesTransaction::with('salesPerson')
             ->orderBy('created_at', 'desc')
-            ->limit(3)
+            ->limit(5)
             ->get()
             ->map(function ($sale) {
+                $salesPersonName = $sale->salesPerson ? $sale->salesPerson->name : 'Unknown';
                 return [
                     'type' => 'sale',
                     'icon' => '💰',
                     'color' => 'emerald',
-                    'message' => "{$sale->salesPerson->name} made a sale",
+                    'message' => "{$salesPersonName} made a sale",
                     'time' => $sale->created_at,
-                    'details' => number_format($sale->total_amount, 2) . " MMK",
-                ];
-            });
-        
-        // Recent Bonus Awards
-        $recentBonuses = BonusAward::with('salesPerson')
-            ->orderBy('created_at', 'desc')
-            ->limit(2)
-            ->get()
-            ->map(function ($bonus) {
-                return [
-                    'type' => 'bonus',
-                    'icon' => '🎁',
-                    'color' => 'purple',
-                    'message' => "{$bonus->salesPerson->name} received bonus",
-                    'time' => $bonus->created_at,
-                    'details' => number_format($bonus->bonus_amount, 2) . " MMK - " . ucfirst($bonus->status),
+                    'details' => number_format($sale->total_amount, 2) . " MMK ({$sale->quantity} items)",
                 ];
             });
         
         return $activities
             ->merge($recentKpi)
             ->merge($recentSales)
-            ->merge($recentBonuses)
             ->sortByDesc('time')
             ->take(10)
             ->values();
     }
 
-    public function getDepartmentPerformanceProperty()
-    {
-        $dateFrom = Carbon::now()->subDays($this->dateRange);
+    // public function getDepartmentPerformanceProperty()
+    // {
+    //     $dateFrom = Carbon::now()->subDays($this->dateRange);
         
-        return Department::active()
-            ->withCount(['users' => function ($query) {
-                $query->where('is_active', true);
-            }])
-            ->get()
-            ->map(function ($dept) use ($dateFrom) {
-                $measurements = KpiMeasurement::whereHas('user', function ($query) use ($dept) {
-                    $query->where('department_id', $dept->id);
-                })
-                ->whereBetween('measurement_date', [$dateFrom, Carbon::now()])
-                ->get();
+    //     return Department::active()
+    //         ->withCount(['users' => function ($query) {
+    //             $query->where('is_active', true);
+    //         }])
+    //         ->get()
+    //         ->map(function ($dept) use ($dateFrom) {
+    //             $measurements = KpiMeasurement::whereHas('user', function ($query) use ($dept) {
+    //                 $query->where('department_id', $dept->id);
+    //             })
+    //             ->whereBetween('measurement_date', [$dateFrom, Carbon::now()])
+    //             ->get();
                 
-                $dept->avg_score = $measurements->count() > 0 ? round($measurements->avg('total_score'), 2) : 0;
-                $dept->avg_percentage = $measurements->count() > 0 ? round($measurements->avg('percentage'), 1) : 0;
-                $dept->measurement_count = $measurements->count();
+    //             $dept->avg_score = $measurements->count() > 0 ? round($measurements->avg('total_score'), 2) : 0;
+    //             $dept->avg_percentage = $measurements->count() > 0 ? round($measurements->avg('percentage'), 1) : 0;
+    //             $dept->measurement_count = $measurements->count();
                 
-                return $dept;
-            })
-            ->sortByDesc('avg_percentage')
-            ->take(5);
-    }
+    //             return $dept;
+    //         })
+    //         ->sortByDesc('avg_percentage')
+    //         ->take(5);
+    // }
 
     public function render()
     {
@@ -209,11 +184,11 @@ class AdminDashboard extends Component
             'overviewStats' => $this->overviewStats,
             'kpiStats' => $this->kpiStats,
             'salesStats' => $this->salesStats,
-            'bonusStats' => $this->bonusStats,
+            // 'bonusStats' => $this->bonusStats,
             'topPerformers' => $this->topPerformers,
             'topSalesPersons' => $this->topSalesPersons,
             'recentActivities' => $this->recentActivities,
-            'departmentPerformance' => $this->departmentPerformance,
+            // 'departmentPerformance' => $this->departmentPerformance,
         ])->layout('layouts.app');
     }
 }

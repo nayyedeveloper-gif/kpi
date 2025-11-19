@@ -23,9 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        'department_id',
-        'branch_id',
-        'position_id',
+        'ranking_code_id',
         'supervisor_id',
         'phone_number',
         'is_active',
@@ -74,9 +72,9 @@ class User extends Authenticatable
         return $this->belongsTo(Branch::class);
     }
 
-    public function position()
+    public function rankingCode()
     {
-        return $this->belongsTo(Position::class);
+        return $this->belongsTo(RankingCode::class);
     }
 
     public function supervisor()

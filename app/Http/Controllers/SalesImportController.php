@@ -19,7 +19,7 @@ class SalesImportController extends Controller
         $branches = SalesData::select('branch')->distinct()->pluck('branch');
         $categories = SalesData::select('item_categories')->distinct()->pluck('item_categories');
         
-        return view('sales.index', compact('sales', 'branches', 'categories'));
+        return view('sales.import', compact('sales', 'branches', 'categories'));
     }
     
     public function import(Request $request)
@@ -29,10 +29,9 @@ class SalesImportController extends Controller
         ]);
 
         $file = $request->file('csv_file');
+        $content = file_get_contents($file->getRealPath());
         
         try {
-            // Read the entire file to handle line breaks in headers
-            
             // Remove BOM if it exists
             $bom = pack('H*','EFBBBF');
             $content = preg_replace("/^$bom/", '', $content);

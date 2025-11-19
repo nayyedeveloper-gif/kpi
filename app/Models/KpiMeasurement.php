@@ -11,6 +11,7 @@ class KpiMeasurement extends Model
 
     protected $fillable = [
         'user_id',
+        'ranking_code_id',
         'measurement_date',
         'ready_to_sale',
         'counter_check',
@@ -21,6 +22,21 @@ class KpiMeasurement extends Model
         'total_score',
         'percentage',
         'notes',
+        'photo_path',
+        'personality_score',
+        'performance_score',
+        'hospitality_score',
+        'customer_follow_up_score',
+        'number_of_people',
+        'supervised_level_score',
+        'personality_kpis',
+        'performance_kpis',
+        'hospitality_kpis',
+        'team_management_kpis',
+        'customer_follow_up_kpis',
+        'supervised_level_kpis',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -33,6 +49,15 @@ class KpiMeasurement extends Model
         'customer_followup' => 'boolean',
         'total_score' => 'integer',
         'percentage' => 'decimal:2',
+        'customer_follow_up_score' => 'integer',
+        'number_of_people' => 'integer',
+        'supervised_level_score' => 'integer',
+        'personality_kpis' => 'array',
+        'performance_kpis' => 'array',
+        'hospitality_kpis' => 'array',
+        'team_management_kpis' => 'array',
+        'customer_follow_up_kpis' => 'array',
+        'supervised_level_kpis' => 'array',
     ];
 
     protected static function booted()
@@ -53,7 +78,12 @@ class KpiMeasurement extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function rankingCode()
+    {
+        return $this->belongsTo(RankingCode::class);
     }
 
     public function logs()

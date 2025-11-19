@@ -3,8 +3,8 @@
     <div class="mb-6">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">KPI Tracking</h1>
-                <p class="text-gray-600 mt-1">Real-time detailed performance tracking</p>
+                <h1 class="text-3xl font-bold text-gray-900">PER_Tracking</h1>
+                <p class="text-gray-600 mt-1">Real-time detailed PER_Tracking</p>
             </div>
             <button wire:click="viewDetails" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

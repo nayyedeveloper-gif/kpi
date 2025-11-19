@@ -340,48 +340,165 @@ class SalesDataController extends Controller
     }
     
     /**
-     * Remove the specified sales record from storage.
+     * Export sales data to CSV
      */
-    public function destroy($id)
+    public function exportCsv(Request $request)
     {
-        try {
-            $sale = SalesData::findOrFail($id);
-            $sale->delete();
+        $filename = 'sales_data_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        
+        // Apply the same filters as index
+        $query = SalesData::query();
+        $this->applyFilters($query, $request);
+        
+        $salesData = $query->orderBy($this->sortField, $this->sortDirection)->get();
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
 
-            return redirect()->route('sales.data.index')
-                ->with('success', 'Sales record deleted successfully.');
-                
-        } catch (\Exception $e) {
-            Log::error('Error deleting sales record: ' . $e->getMessage());
-            return back()
-                ->with('error', 'Error deleting sales record. Please try again.');
+        $callback = function() use ($salesData) {
+            $file = fopen('php://output', 'w');
+            
+            // Write BOM for UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write headers
+            fputcsv($file, [
+                'Year', 'Month', 'Invoice Date', 'Voucher Number', 'Branch', 'Customer Name', 
+                'Customer Status', 'Contact Number', 'Contact Address', 'Township', 'Division', 
+                'Customer NRC Number', 'Item Categories', 'Item Group', 'Item Name', 'Density', 
+                'Weight', 'Unit', 'Quantity', 'Gold Price', 'Gold Gross Amount', 'Market Price', 
+                'Market Gross Amount', 'Discount', 'Promotion Discount', 'Special Discount', 
+                'Discount Net Amount', 'Promotion Net Amount', 'Total Net Amount', 'Tax', 'Sales Person'
+            ]);
+            
+            // Write data
+            foreach ($salesData as $sale) {
+                fputcsv($file, [
+                    $sale->year,
+                    $sale->month,
+                    $sale->invoiced_date,
+                    $sale->voucher_number,
+                    $sale->branch,
+                    $sale->customer_name,
+                    $sale->customer_status,
+                    $sale->contact_number,
+                    $sale->contact_address,
+                    $sale->township,
+                    $sale->division,
+                    $sale->customer_nrc_number,
+                    $sale->item_categories,
+                    $sale->item_group,
+                    $sale->item_name,
+                    $sale->density,
+                    $sale->weight,
+                    $sale->unit,
+                    $sale->quantity,
+                    $sale->g_price,
+                    $sale->g_gross_amount,
+                    $sale->m_price,
+                    $sale->m_gross_amount,
+                    $sale->dis,
+                    $sale->promotion_dis,
+                    $sale->special_dis,
+                    $sale->dis_net_amount,
+                    $sale->promotion_net_amount,
+                    $sale->total_net_amount,
+                    $sale->tax,
+                    $sale->sale_person,
+                ]);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+    
+    /**
+     * Export sales data to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        // For now, redirect to CSV export (can be enhanced with proper Excel library later)
+        return $this->exportCsv($request)->header('Content-Type', 'application/vnd.ms-excel')
+                                        ->header('Content-Disposition', 'attachment; filename="sales_data_' . now()->format('Y-m-d_H-i-s') . '.xls"');
+    }
+    
+    /**
+     * Export sales data to PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        // Apply filters
+        $query = SalesData::query();
+        $this->applyFilters($query, $request);
+        
+        $salesData = $query->orderBy($this->sortField, $this->sortDirection)->get();
+        
+        // For now, return a simple text response (can be enhanced with proper PDF library like TCPDF or DomPDF)
+        $filename = 'sales_data_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+        
+        // Simple PDF-like text output (should be replaced with proper PDF generation)
+        $content = "Sales Data Report\n\n";
+        $content .= "Generated on: " . now()->format('Y-m-d H:i:s') . "\n\n";
+        $content .= str_repeat("-", 100) . "\n";
+        $content .= sprintf("%-12s %-15s %-20s %-15s %-10s\n", "Date", "Voucher", "Customer", "Item", "Amount");
+        $content .= str_repeat("-", 100) . "\n";
+        
+        foreach ($salesData as $sale) {
+            $content .= sprintf("%-12s %-15s %-20s %-15s %-10s\n", 
+                $sale->invoiced_date ?? '',
+                substr($sale->voucher_number ?? '', 0, 15),
+                substr($sale->customer_name ?? '', 0, 20),
+                substr($sale->item_name ?? '', 0, 15),
+                number_format($sale->total_net_amount ?? 0, 0)
+            );
         }
+        
+        return response($content, 200, $headers);
     }
     
     /**
-     * Show the import form.
+     * Apply filters to query
      */
-    public function importForm()
+    private function applyFilters($query, $request)
     {
-        return view('sales.import');
-    }
-    
-    /**
-     * Import sales data from CSV file.
-     */
-    public function import(Request $request)
-    {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
-        ]);
+        if (!empty($request->branch)) {
+            $query->where('branch', 'like', '%' . $request->branch . '%');
+        }
         
-        $file = $request->file('csv_file');
-        $path = $file->storeAs('temp', 'import_' . time() . '.csv');
+        if (!empty($request->customer_name)) {
+            $query->where('customer_name', 'like', '%' . $request->customer_name . '%');
+        }
         
-        // Process the import in the background
-        // You can use Laravel's queue system here for better performance
+        if (!empty($request->item_categories)) {
+            $query->where('item_categories', $request->item_categories);
+        }
         
-        return redirect()->route('sales.index')
-                         ->with('success', 'Sales data import has been queued. You will be notified when it is completed.');
+        if (!empty($request->item_group)) {
+            $query->where('item_group', $request->item_group);
+        }
+        
+        if (!empty($request->sale_person)) {
+            $query->where('sale_person', 'like', '%' . $request->sale_person . '%');
+        }
+        
+        if (!empty($request->from_date)) {
+            $query->where('invoiced_date', '>=', $request->from_date);
+        }
+        
+        if (!empty($request->to_date)) {
+            $query->where('invoiced_date', '<=', $request->to_date);
+        }
     }
 }

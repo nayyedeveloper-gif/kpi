@@ -21,7 +21,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete_users', 'display_name' => 'Delete Users', 'category' => 'users', 'description' => 'Can delete users'],
             
             // KPI
-            ['name' => 'view_kpi', 'display_name' => 'View KPI', 'category' => 'kpi', 'description' => 'Can view KPI tracking'],
+            ['name' => 'view_kpi', 'display_name' => 'View KPI', 'category' => 'kpi', 'description' => 'Can view PER_Tracking'],
             ['name' => 'manage_kpi', 'display_name' => 'Manage KPI', 'category' => 'kpi', 'description' => 'Can create and edit KPI measurements'],
             ['name' => 'view_own_kpi', 'display_name' => 'View Own KPI', 'category' => 'kpi', 'description' => 'Can view own KPI only'],
             

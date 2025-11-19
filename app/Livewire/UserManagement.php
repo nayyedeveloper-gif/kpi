@@ -3,9 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\User;
-use App\Models\Department;
-use App\Models\Position;
-use App\Models\Role;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,53 +11,33 @@ class UserManagement extends Component
     use WithPagination;
 
     public $search = '';
-    public $selectedDepartment = '';
-    public $selectedPosition = '';
-    public $showForm = false;
-    public $showDetailsModal = false;
-    public $editingUser = null;
-    public $viewingUser = null;
-    public $userDetails = [];
+    public $showCreateForm = false;
+    public $showEditForm = false;
+    public $editingUserId = null;
 
     // Form fields
     public $name = '';
     public $email = '';
     public $password = '';
-    public $phone_number = '';
-    public $role_id = '';
-    public $department_id = '';
-    public $position_id = '';
-    public $supervisor_id = '';
-    public $is_active = true;
+    public $password_confirmation = '';
 
     protected $rules = [
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users,email',
-        'password' => 'required|string|min:8',
-        'phone_number' => 'nullable|string|max:20',
-        'role_id' => 'required|exists:roles,id',
-        'department_id' => 'required|exists:departments,id',
-        'position_id' => 'required|exists:positions,id',
-        'supervisor_id' => 'nullable|exists:users,id',
-        'is_active' => 'boolean',
+        'password' => 'required|string|min:8|confirmed',
     ];
 
-    public function mount()
-    {
-        $this->resetForm();
-    }
+    protected $messages = [
+        'name.required' => 'Name is required',
+        'email.required' => 'Email is required',
+        'email.email' => 'Please enter a valid email address',
+        'email.unique' => 'This email is already registered',
+        'password.required' => 'Password is required',
+        'password.min' => 'Password must be at least 8 characters',
+        'password.confirmed' => 'Password confirmation does not match',
+    ];
 
     public function updatedSearch()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedSelectedDepartment()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedSelectedPosition()
     {
         $this->resetPage();
     }
@@ -68,68 +45,60 @@ class UserManagement extends Component
     public function showCreateForm()
     {
         $this->resetForm();
-        $this->showForm = true;
+        $this->showCreateForm = true;
+        $this->showEditForm = false;
     }
 
     public function showEditForm($userId)
     {
         $user = User::findOrFail($userId);
-        $this->editingUser = $user;
+        $this->editingUserId = $userId;
         $this->name = $user->name;
         $this->email = $user->email;
         $this->password = '';
-        $this->phone_number = $user->phone_number;
-        $this->role_id = $user->role_id;
-        $this->department_id = $user->department_id;
-        $this->position_id = $user->position_id;
-        $this->supervisor_id = $user->supervisor_id;
-        $this->is_active = $user->is_active;
-        $this->showForm = true;
+        $this->password_confirmation = '';
+        $this->showEditForm = true;
+        $this->showCreateForm = false;
+
+        // Update validation rules for editing
+        $this->rules['email'] = 'required|email|unique:users,email,' . $userId;
+        $this->rules['password'] = 'nullable|string|min:8|confirmed';
     }
 
     public function resetForm()
     {
-        $this->editingUser = null;
         $this->name = '';
         $this->email = '';
         $this->password = '';
-        $this->phone_number = '';
-        $this->role_id = '';
-        $this->department_id = '';
-        $this->position_id = '';
-        $this->supervisor_id = '';
-        $this->is_active = true;
-        $this->showForm = false;
+        $this->password_confirmation = '';
+        $this->editingUserId = null;
+        $this->showCreateForm = false;
+        $this->showEditForm = false;
+
+        // Reset validation rules
+        $this->rules['email'] = 'required|email|unique:users,email';
+        $this->rules['password'] = 'required|string|min:8|confirmed';
     }
 
     public function save()
     {
-        if ($this->editingUser) {
-            $this->rules['email'] = 'required|email|unique:users,email,' . $this->editingUser->id;
-            $this->rules['password'] = 'nullable|string|min:8';
-        }
-
         $this->validate();
 
         $data = [
             'name' => $this->name,
             'email' => $this->email,
-            'phone_number' => $this->phone_number,
-            'role_id' => $this->role_id,
-            'department_id' => $this->department_id,
-            'position_id' => $this->position_id,
-            'supervisor_id' => $this->supervisor_id ?: null,
-            'is_active' => $this->is_active,
         ];
 
         if ($this->password) {
             $data['password'] = bcrypt($this->password);
         }
 
-        if ($this->editingUser) {
-            $this->editingUser->update($data);
+        if ($this->editingUserId) {
+            User::findOrFail($this->editingUserId)->update($data);
             session()->flash('message', 'User updated successfully!');
         } else {
+            $data['password'] = bcrypt($this->password);
+            $data['email_verified_at'] = now();
             User::create($data);
             session()->flash('message', 'User created successfully!');
         }
@@ -137,102 +106,40 @@ class UserManagement extends Component
         $this->resetForm();
     }
 
-    public function delete($userId)
+    public function deleteUser($userId)
     {
         $user = User::findOrFail($userId);
+
+        // Prevent deleting the current authenticated user
+        if ($userId === auth()->id()) {
+            session()->flash('error', 'You cannot delete your own account!');
+            return;
+        }
+
+        // Prevent deleting if it's the last admin user
+        if (User::count() <= 1) {
+            session()->flash('error', 'Cannot delete the last user!');
+            return;
+        }
+
         $user->delete();
         session()->flash('message', 'User deleted successfully!');
     }
 
-    public function viewDetails($userId)
-    {
-        $this->viewingUser = User::with([
-            'department', 
-            'position', 
-            'role', 
-            'supervisor',
-            'subordinates.position',
-            'kpiMeasurements' => function ($query) {
-                $query->latest()->limit(30);
-            },
-            'kpiLogs' => function ($query) {
-                $query->latest()->limit(20);
-            }
-        ])->findOrFail($userId);
-
-        // Calculate user statistics
-        $measurements = $this->viewingUser->kpiMeasurements;
-        
-        $this->userDetails = [
-            'total_measurements' => $measurements->count(),
-            'avg_score' => $measurements->count() > 0 ? round($measurements->avg('total_score'), 2) : 0,
-            'avg_percentage' => $measurements->count() > 0 ? round($measurements->avg(function ($m) {
-                return $m->percentage;
-            }), 2) : 0,
-            'good_logs' => $this->viewingUser->kpiLogs()->where('status', 'good')->count(),
-            'bad_logs' => $this->viewingUser->kpiLogs()->where('status', 'bad')->count(),
-            'subordinates_count' => $this->viewingUser->subordinates->count(),
-            'recent_measurements' => $measurements->take(10),
-            'recent_logs' => $this->viewingUser->kpiLogs,
-        ];
-
-        $this->showDetailsModal = true;
-    }
-
-    public function closeDetailsModal()
-    {
-        $this->showDetailsModal = false;
-        $this->viewingUser = null;
-        $this->userDetails = [];
-    }
-
     public function getUsersProperty()
     {
-        return User::with(['department', 'position', 'supervisor', 'role'])
-            ->when($this->search, function ($query) {
+        return User::when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                       ->orWhere('email', 'like', '%' . $this->search . '%');
             })
-            ->when($this->selectedDepartment, function ($query) {
-                $query->where('department_id', $this->selectedDepartment);
-            })
-            ->when($this->selectedPosition, function ($query) {
-                $query->where('position_id', $this->selectedPosition);
-            })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
-    }
-
-    public function getDepartmentsProperty()
-    {
-        return Department::where('is_active', true)->orderBy('name')->get();
-    }
-
-    public function getPositionsProperty()
-    {
-        return Position::where('is_active', true)->orderBy('hierarchy_level')->get();
-    }
-
-    public function getSupervisorsProperty()
-    {
-        return User::where('id', '!=', $this->editingUser?->id)
-            ->where('is_active', true)
-            ->with(['position'])
-            ->get();
-    }
-
-    public function getRolesProperty()
-    {
-        return Role::where('is_active', true)->orderBy('name')->get();
     }
 
     public function render()
     {
         return view('livewire.user-management', [
             'users' => $this->users,
-            'departments' => $this->departments,
-            'positions' => $this->positions,
-            'supervisors' => $this->supervisors,
-            'roles' => $this->roles,
         ])->layout('layouts.app');
     }
 }

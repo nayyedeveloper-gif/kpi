@@ -38,7 +38,7 @@ class KpiReportExport implements FromCollection, WithHeadings, WithMapping, With
                 'Cleanliness',
                 'Stock Check',
                 'Order Handling',
-                'Customer Followup',
+                'Customer Follow-Up',
                 'Total Score',
                 'Percentage',
                 'Logs Count'

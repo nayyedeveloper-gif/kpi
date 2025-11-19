@@ -14,6 +14,8 @@ class KpiLog extends Model
     protected $fillable = [
         'kpi_measurement_id',
         'user_id',
+        'ranking_code_id',
+        'action',
         'kpi_field',
         'status',
         'notes',
@@ -63,7 +65,7 @@ class KpiLog extends Model
             'cleanliness' => 'Cleanliness',
             'stock_check' => 'Stock Check',
             'order_handling' => 'Order Handling',
-            'customer_followup' => 'Customer Followup',
+            'customer_followup' => 'Customer Follow-Up',
         ];
 
         return $fieldNames[$this->kpi_field] ?? ucwords(str_replace('_', ' ', $this->kpi_field));

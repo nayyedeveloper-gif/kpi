@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\EntryLevelChecklist;
 use App\Models\EntryLevelImpact;
 use App\Models\User;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Carbon\Carbon;
@@ -223,8 +224,9 @@ class EntryLevelTracking extends Component
         $this->showDetailsModal = false;
     }
 
+    #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.entry-level-tracking')->layout('layouts.app');
+        return view('livewire.entry-level-tracking');
     }
 }

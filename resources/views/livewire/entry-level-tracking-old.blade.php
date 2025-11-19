@@ -1,8 +1,8 @@
 <div class="p-6">
     <!-- Header with Tabs -->
     <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">KPI Tracking</h1>
-        <p class="mt-2 text-sm text-gray-600">Real-time detailed performance tracking</p>
+        <h1 class="text-3xl font-bold text-gray-900">PER_Tracking</h1>
+        <p class="mt-2 text-sm text-gray-600">Real-time detailed PER_Tracking</p>
         
         <!-- Tabs -->
         <div class="mt-4 border-b border-gray-200">

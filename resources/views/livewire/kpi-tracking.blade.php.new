@@ -1,0 +1,176 @@
+{{-- Single root element for Livewire component --}}
+<div>
+    {{-- Success Message --}}
+    @if (session()->has('message'))
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-green-800 text-sm font-medium">{{ session('message') }}</span>
+        </div>
+    </div>
+    @endif
+
+    <!-- Page Header -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="bg-indigo-100 p-3 rounded-xl mr-4">
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Performance Tracking</h1>
+                    <p class="text-sm text-gray-600 mt-1">Monitor and track performance metrics in real-time</p>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <div class="relative">
+                    <input type="date" wire:model.live="selectedDate" class="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-auto" />
+                </div>
+                <select wire:model.live="selectedUser" class="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-auto">
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        @if($activeTab === 'customer-service')
+            <!-- Customer Service Tab -->
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-headset text-indigo-600 mr-2"></i>
+                Customer Service KPIs
+            </h2>
+            <!-- Add your customer service KPI content here -->
+
+        @elseif($activeTab === 'sale-representative')
+            <!-- Sale Representative Tab -->
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-user-tie text-indigo-600 mr-2"></i>
+                Sale Representative KPIs
+            </h2>
+            <!-- Add your sale representative KPI content here -->
+
+        @elseif($activeTab === 'management')
+            <!-- Management Level Tab -->
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-clipboard-check text-indigo-600 mr-2"></i>
+                Management Level KPIs
+            </h2>
+            <!-- Add your management KPI content here -->
+        @endif
+    </div>
+
+    <!-- Legacy KPI Cards (if measurement exists) -->
+    @if(isset($measurement) && $measurement)
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <!-- Counter Check -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-2 {{ $measurement->counter_check ? 'border-green-400' : 'border-gray-200' }}">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Counter Check</h3>
+                @if($measurement->counter_check)
+                <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">GOOD</span>
+                @else
+                <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">NOT SET</span>
+                @endif
+            </div>
+            <div class="flex space-x-2">
+                <button wire:click="openLogModal('counter_check')" class="flex-1 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center space-x-2 shadow-md">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                    </svg>
+                    <span class="font-semibold">Good</span>
+                </button>
+            </div>
+            <div class="mt-3 text-xs text-gray-500">
+                Logs: {{ $measurement->logs()->where('kpi_measurement_id', $measurement->id)->count() }}
+            </div>
+        </div>
+
+        <!-- Add other KPI cards here with the same structure -->
+    </div>
+    @endif
+
+    <!-- KPI Detail Modal -->
+    @if(isset($showDetailModal) && $showDetailModal)
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-data="{ show: true }" x-show="show" @click.away="$wire.closeDetailModal()">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal content here -->
+        </div>
+    </div>
+    @endif
+
+    <!-- Log Entry Modal -->
+    @if($showLogModal)
+    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Add Log Entry</h3>
+                <button wire:click="closeModals" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Log form content here -->
+        </div>
+    </div>
+    @endif
+
+    <!-- Daily Timeline Modal -->
+    @if($showDetailsModal)
+    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Daily Timeline - {{ \Carbon\Carbon::parse($viewDate)->format('F d, Y') }}</h3>
+                <button wire:click="closeModals" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 max-h-96 overflow-y-auto">
+                @forelse($dailyLogs as $log)
+                <div class="bg-gray-50 rounded-lg p-4 border-l-4 {{ $log->status === 'good' ? 'border-green-500' : 'border-red-500' }}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                @if($log->status === 'good')
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">GOOD</span>
+                                @else
+                                <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">BAD</span>
+                                @endif
+                                @if($log->kpi_field)
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded">{{ $log->kpi_field_name }}</span>
+                                @endif
+                                <span class="text-sm text-gray-600">{{ $log->logged_at->format('h:i A') }}</span>
+                            </div>
+                            @if($log->notes)
+                            <p class="text-gray-700 text-sm mb-2">{{ $log->notes }}</p>
+                            @endif
+                            @if($log->photo_path)
+                            <img src="{{ Storage::url($log->photo_path) }}" class="h-32 rounded-lg mt-2">
+                            @endif
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            by {{ $log->user->name }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="text-center py-8 text-gray-500">
+                    No logs for this date yet.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @endif
+</div>

@@ -23,23 +23,23 @@ class UpdateSalesTransactionsCommission extends Seeder
                 'updated_at' => now()
             ]);
 
-        // Update commission based on commission_rate if not set
+        // Update commission_amount based on commission_rate if not set
         DB::table('sales_transactions')
             ->where(function($query) {
-                $query->whereNull('commission')
-                      ->orWhere('commission', 0);
+                $query->whereNull('commission_amount')
+                      ->orWhere('commission_amount', 0);
             })
             ->where('commission_rate', '>', 0)
             ->update([
-                'commission' => DB::raw('(quantity * unit_price) * (commission_rate / 100)'),
+                'commission_amount' => DB::raw('(quantity * unit_price) * (commission_rate / 100)'),
                 'updated_at' => now()
             ]);
 
         // For records with no commission_rate, set a default 5% commission
         DB::table('sales_transactions')
             ->where(function($query) {
-                $query->whereNull('commission')
-                      ->orWhere('commission', 0);
+                $query->whereNull('commission_amount')
+                      ->orWhere('commission_amount', 0);
             })
             ->where(function($query) {
                 $query->whereNull('commission_rate')
@@ -47,7 +47,7 @@ class UpdateSalesTransactionsCommission extends Seeder
             })
             ->update([
                 'commission_rate' => 5,
-                'commission' => DB::raw('(quantity * unit_price) * 0.05'),
+                'commission_amount' => DB::raw('(quantity * unit_price) * 0.05'),
                 'updated_at' => now()
             ]);
     }

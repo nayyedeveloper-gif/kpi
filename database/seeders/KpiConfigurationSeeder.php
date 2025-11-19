@@ -53,7 +53,7 @@ class KpiConfigurationSeeder extends Seeder
             'cascade_enabled' => true,
             'max_cascade_levels' => 5,
             'is_active' => true,
-            'description' => 'KPI tracking configuration for operation level sales staff with cascading accountability to supervisors.',
+            'description' => 'PER_Tracking configuration for operation level sales staff with cascading accountability to supervisors.',
             'good_impact' => [
                 0 => 10.0,  // Sales Person
                 1 => 3.0,   // Leader
@@ -79,7 +79,7 @@ class KpiConfigurationSeeder extends Seeder
             'cascade_enabled' => true,
             'max_cascade_levels' => 5,
             'is_active' => true,
-            'description' => 'KPI tracking configuration for entry level customer service staff with cascading accountability.',
+            'description' => 'PER_Tracking configuration for entry level customer service staff with cascading accountability.',
             'good_impact' => [
                 0 => 10.0,  // Customer Service Rep
                 1 => 3.0,   // Team Leader

@@ -26,9 +26,10 @@ class UserSeeder extends Seeder
         $positions = Position::orderBy('hierarchy_level')->get();
 
         // CEO (Top Level - No Supervisor)
-        $ceo = User::create([
+        $ceo = User::updateOrCreate([
+            'email' => 'nayzawoo@company.com'
+        ], [
             'name' => 'Nay Zaw Oo',
-            'email' => 'nayzawoo@company.com',
             'password' => Hash::make('password'),
             'role_id' => $adminRole->id,
             'department_id' => $departments->first()->id,
@@ -39,9 +40,10 @@ class UserSeeder extends Seeder
         ]);
 
         // Directors (Report to CEO)
-        $director1 = User::create([
+        $director1 = User::updateOrCreate([
+            'email' => 'mayumon@company.com'
+        ], [
             'name' => 'Ma Yu Mon',
-            'email' => 'mayumon@company.com',
             'password' => Hash::make('password'),
             'role_id' => $managerRole->id,
             'department_id' => $departments->skip(1)->first()->id ?? $departments->first()->id,
@@ -51,9 +53,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $director2 = User::create([
+        $director2 = User::updateOrCreate([
+            'email' => 'ninikyawlwin@company.com'
+        ], [
             'name' => 'Ni Ni Kyaw Lwin',
-            'email' => 'ninikyawlwin@company.com',
             'password' => Hash::make('password'),
             'role_id' => $managerRole->id,
             'department_id' => $departments->skip(2)->first()->id ?? $departments->first()->id,
@@ -64,9 +67,10 @@ class UserSeeder extends Seeder
         ]);
 
         // Managers (Report to Directors)
-        $manager1 = User::create([
+        $manager1 = User::updateOrCreate([
+            'email' => 'kyawzinhtet@company.com'
+        ], [
             'name' => 'Kyaw Zin Htet',
-            'email' => 'kyawzinhtet@company.com',
             'password' => Hash::make('password'),
             'role_id' => $supervisorRole->id,
             'department_id' => $director1->department_id,
@@ -76,9 +80,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $manager2 = User::create([
+        $manager2 = User::updateOrCreate([
+            'email' => 'thidaaye@company.com'
+        ], [
             'name' => 'Thida Aye',
-            'email' => 'thidaaye@company.com',
             'password' => Hash::make('password'),
             'role_id' => $supervisorRole->id,
             'department_id' => $director2->department_id,
@@ -89,9 +94,10 @@ class UserSeeder extends Seeder
         ]);
 
         // Supervisors (Report to Managers)
-        $supervisor1 = User::create([
+        $supervisor1 = User::updateOrCreate([
+            'email' => 'aungaung@company.com'
+        ], [
             'name' => 'Aung Aung',
-            'email' => 'aungaung@company.com',
             'password' => Hash::make('password'),
             'role_id' => $supervisorRole->id,
             'department_id' => $manager1->department_id,
@@ -101,9 +107,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $supervisor2 = User::create([
+        $supervisor2 = User::updateOrCreate([
+            'email' => 'zawminoo@company.com'
+        ], [
             'name' => 'Zaw Min Oo',
-            'email' => 'zawminoo@company.com',
             'password' => Hash::make('password'),
             'role_id' => $supervisorRole->id,
             'department_id' => $manager1->department_id,
@@ -113,9 +120,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $supervisor3 = User::create([
+        $supervisor3 = User::updateOrCreate([
+            'email' => 'khinmyochit@company.com'
+        ], [
             'name' => 'Khin Myo Chit',
-            'email' => 'khinmyochit@company.com',
             'password' => Hash::make('password'),
             'role_id' => $supervisorRole->id,
             'department_id' => $manager2->department_id,
@@ -126,9 +134,10 @@ class UserSeeder extends Seeder
         ]);
 
         // Sales Staff (Report to Supervisors)
-        User::create([
+        User::updateOrCreate([
+            'email' => 'htethtetaung@company.com'
+        ], [
             'name' => 'Htet Htet Aung',
-            'email' => 'htethtetaung@company.com',
             'password' => Hash::make('password'),
             'role_id' => $employeeRole->id,
             'department_id' => $supervisor1->department_id,
@@ -138,9 +147,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        User::create([
+        User::updateOrCreate([
+            'email' => 'myamyawin@company.com'
+        ], [
             'name' => 'Mya Mya Win',
-            'email' => 'myamyawin@company.com',
             'password' => Hash::make('password'),
             'role_id' => $employeeRole->id,
             'department_id' => $supervisor1->department_id,
@@ -150,9 +160,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        User::create([
+        User::updateOrCreate([
+            'email' => 'minminoo@company.com'
+        ], [
             'name' => 'Min Min Oo',
-            'email' => 'minminoo@company.com',
             'password' => Hash::make('password'),
             'role_id' => $employeeRole->id,
             'department_id' => $supervisor2->department_id,
@@ -163,9 +174,10 @@ class UserSeeder extends Seeder
         ]);
 
         // Customer Service Staff (Report to Supervisors)
-        User::create([
+        User::updateOrCreate([
+            'email' => 'susuhlaing@company.com'
+        ], [
             'name' => 'Su Su Hlaing',
-            'email' => 'susuhlaing@company.com',
             'password' => Hash::make('password'),
             'role_id' => $employeeRole->id,
             'department_id' => $supervisor3->department_id,
@@ -175,9 +187,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        User::create([
+        User::updateOrCreate([
+            'email' => 'phyowaiyan@company.com'
+        ], [
             'name' => 'Phyo Wai Yan',
-            'email' => 'phyowaiyan@company.com',
             'password' => Hash::make('password'),
             'role_id' => $employeeRole->id,
             'department_id' => $supervisor3->department_id,
@@ -187,9 +200,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        User::create([
+        User::updateOrCreate([
+            'email' => 'ayeayekhaing@company.com'
+        ], [
             'name' => 'Aye Aye Khaing',
-            'email' => 'ayeayekhaing@company.com',
             'password' => Hash::make('password'),
             'role_id' => $employeeRole->id,
             'department_id' => $supervisor3->department_id,

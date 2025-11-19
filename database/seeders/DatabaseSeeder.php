@@ -15,7 +15,9 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             PositionSeeder::class,
             RoleSeeder::class,
+            BranchSeeder::class,
             UserSeeder::class,
+            ComprehensiveKpiSeeder::class,
         ]);
     }
 }
